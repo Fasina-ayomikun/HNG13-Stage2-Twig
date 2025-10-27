@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: hng-stage2-twig-deeyah
+    env: docker
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true

@@ -28,11 +28,11 @@ switch ($path) {
     break;
 
   case '/auth/login':
-    render($twig, 'auth-login.twig', ['title' => 'Login']);
+    render($twig, 'auth/login.twig', ['title' => 'Login']);
     break;
 
   case '/auth/signup':
-    render($twig, 'auth-signup.twig', ['title' => 'Sign up']);
+    render($twig, 'authl/signup.twig', ['title' => 'Sign up']);
     break;
 
   case '/dashboard':

@@ -1,26 +1,26 @@
 .auth-wrap {
-    min-height: 90dvh;
     display: grid;
     place-items: center;
-    background: #fafafb;
+    min-height: 90dvh;
     padding: 24px;
+    background: #fafafb;
 }
 
 .auth-card {
-    width: min(520px, 100%);
-    background: #fff;
-    border-radius: 14px;
-    padding: 24px 20px;
-    box-shadow: 0 8px 24px rgba(16, 24, 40, .08);
     display: grid;
     gap: 16px;
+    width: min(520px, 100%);
+    padding: 24px 20px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
 }
 
 .auth-title {
     font-size: 1.4rem;
     font-weight: 800;
+    letter-spacing: -0.01em;
     color: var(--color-1);
-    letter-spacing: -.01em;
 }
 
 .auth-field {
@@ -29,47 +29,48 @@
 }
 
 .auth-field label {
+    font-size: 0.95rem;
     font-weight: 600;
-    font-size: .95rem;
 }
 
 .auth-field input {
     width: 100%;
+    padding: 10px 12px;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-    padding: 10px 12px;
     font: inherit;
+    background: #fff;
 }
 
 .auth-field input:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--accent);
     border-color: var(--color-2);
+    box-shadow: 0 0 0 3px var(--accent);
 }
 
 .auth-actions {
     display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
     margin-top: 4px;
-    flex-wrap: wrap;
 }
 
 .error {
+    font-size: 0.9rem;
     color: #b91c1c;
-    font-size: .9rem;
 }
 
 .toast {
     position: fixed;
-    right: 16px;
     top: 16px;
+    right: 16px;
     height: fit-content;
+    border-radius: 5px;
     background: var(--color-2);
     color: #fff;
     font-size: 0.95rem;
-    border-radius: 5px;
 }
 
 .password-wrap {
@@ -85,19 +86,39 @@
 
 .toggle-pass {
     position: absolute;
-    right: 10px;
     top: 50%;
-    font-size: 0.9rem;
+    right: 10px;
     transform: translateY(-50%);
     border: none;
     background: none;
     cursor: pointer;
+    font-size: 0.9rem;
     color: #6b7280;
     transition: color 0.2s ease;
 }
 
 .toggle-pass:hover,
 .toggle-pass:focus-visible {
-    color: var(--color-2, #7209b7);
     outline: none;
+    color: var(--color-2, #7209b7);
+}
+
+/* Media Queries */
+@media (max-width: 480px) {
+    .auth-wrap {
+        padding: 16px;
+    }
+
+    .auth-card {
+        padding: 20px 16px;
+        gap: 14px;
+    }
+
+    .auth-title {
+        font-size: 1.25rem;
+    }
+
+    .auth-actions {
+        gap: 8px;
+    }
 }

@@ -4,48 +4,56 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>{{ title|default('TicketFlow') }}</title>
-<link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
 
-  <link rel="stylesheet" href="/assets/css/base.css?v=3">    
-<link rel="stylesheet" href="/assets/css/theme.css?v=3">   
-<link rel="stylesheet" href="/assets/css/landing.css?v=3">
-<link rel="stylesheet" href="/assets/css/auth.css?v=3">
-<link rel="stylesheet" href="/assets/css/dashboard.css?v=3">
-<link rel="stylesheet" href="/assets/css/tickets.css?v=3">
-  {% block scripts %}{% endblock %}
+  <link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
+
+  {# CSS: base -> theme -> page-specific #}
+  <link rel="stylesheet" href="/assets/css/base.css?v=3">
+  <link rel="stylesheet" href="/assets/css/theme.css?v=3">
+  <link rel="stylesheet" href="/assets/css/landing.css?v=3">
+  <link rel="stylesheet" href="/assets/css/auth.css?v=3">
+  <link rel="stylesheet" href="/assets/css/dashboard.css?v=3">
+  <link rel="stylesheet" href="/assets/css/tickets.css?v=3">
+
+  {# per-page extra styles (optional) #}
+  {% block styles %}{% endblock %}
 </head>
 <body>
 
   {% include "_partials/header.twig" with {
-  brand: brand|default('DeeTickets'),
-  brand_url: brand_url|default('/'),
-  actions: actions|default([])
-} %}
-
+    brand: brand|default('DeeTickets'),
+    brand_url: brand_url|default('/'),
+    actions: actions|default([])
+  } %}
 
   <main id="main-content">
     {% block content %}{% endblock %}
   </main>
 
-{% include "_partials/footer.twig" with {
-  brand: "DeeTickets",
-  tagline: "Smart ticketing made simple. Track, assign, and resolve effortlessly."
-} %}
+  {% include "_partials/footer.twig" with {
+    brand: "DeeTickets",
+    tagline: "Smart ticketing made simple. Track, assign, and resolve effortlessly."
+  } %}
 
+  {# JS bundles #}
   <script src="/js/auth.js"></script>
   <script src="/js/tickets.js"></script>
   <script src="/js/header.js"></script>
 
-  {# Client-side guard for protected pages per brief (localStorage) #}
+  {# client-side guard for protected pages #}
   {% if protected|default(false) %}
     <script>
-      (function(){
-        try { if (!localStorage.getItem('ticketapp_session')) location.replace('/auth/login'); }
-        catch { location.replace('/auth/login'); }
+      (function () {
+        try {
+          if (!localStorage.getItem('ticketapp_session')) location.replace('/auth/login');
+        } catch (_) {
+          location.replace('/auth/login');
+        }
       }());
     </script>
   {% endif %}
 
+  {# per-page extra scripts (optional) #}
   {% block scripts %}{% endblock %}
 </body>
 </html>

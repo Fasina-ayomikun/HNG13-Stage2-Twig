@@ -1,6 +1,5 @@
 {% extends "_layouts/base.twig" %}
 
-{# For auth pages you usually don't want the protected guard #}
 {% set protected = false %}
 
 
@@ -123,12 +122,9 @@
 
   const toggleP = document.getElementById('togglePass');
   const toggleC = document.getElementById('toggleConfirm');
+ if (window.Auth && Auth.isAuthed()) location.replace('/dashboard');
 
-  // Already signed in? Bounce to dashboard.
-  if (window.Auth && Auth.isAuthed()) location.replace('/dashboard');
-
-  // Show/Hide password
-  if (toggleP && password) {
+   if (toggleP && password) {
     toggleP.addEventListener('click', () => {
       const show = password.type === 'password';
       password.type = show ? 'text' : 'password';
@@ -138,7 +134,6 @@
     });
   }
 
-  // Show/Hide confirm password
   if (toggleC && confirm) {
     toggleC.addEventListener('click', () => {
       const show = confirm.type === 'password';
@@ -152,14 +147,12 @@
   form.addEventListener('submit', ev => {
     ev.preventDefault();
 
-    // reset errors
-    if (eEmail) eEmail.hidden = true;
+   if (eEmail) eEmail.hidden = true;
     if (ePass)  ePass.hidden  = true;
     if (eConf)  eConf.hidden  = true;
 
     let ok = true;
 
-    // email
     if (!email.value.trim()) {
       if (eEmail) { eEmail.textContent = 'Email is required.'; eEmail.hidden = false; }
       ok = false;
@@ -168,8 +161,7 @@
       ok = false;
     }
 
-    // password
-    if (!password.value.trim()) {
+     if (!password.value.trim()) {
       if (ePass) { ePass.textContent = 'Password is required.'; ePass.hidden = false; }
       ok = false;
     } else if (password.value.length < 6) {
@@ -177,7 +169,6 @@
       ok = false;
     }
 
-    // confirm
     if (!confirm.value.trim()) {
       if (eConf) { eConf.textContent = 'Please confirm your password.'; eConf.hidden = false; }
       ok = false;
@@ -195,8 +186,7 @@
       return;
     }
 
-    // "Create account" — for this local app we just log in with email
-    if (window.Auth && typeof Auth.login === 'function') {
+   if (window.Auth && typeof Auth.login === 'function') {
       Auth.login(email.value);
     }
     location.replace('/dashboard');

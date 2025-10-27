@@ -1,11 +1,3 @@
-{# templates/_partials/filterchip.twig #}
-{#
-  Props expected:
-  - label (string)
-  - active (bool)
-  - id (string, optional)
-  - href (optional) or click action (handled via JS)
-#}
 
 {% set is_active = active|default(false) %}
 {% set classes = 'chip' ~ (is_active ? ' chip--active' : '') %}

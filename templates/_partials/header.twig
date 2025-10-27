@@ -1,21 +1,9 @@
-{# templates/_partials/header.twig #}
-{# Usage:
-   {% include "_partials/header.twig" with {
-     brand: "DeeTickets",
-     brand_url: "/",
-     actions: [
-       { action_name: "Login", action_url: "/auth/login", color: "ghost" },
-       { action_name: "Get started", action_url: "/auth/signup", color: "primary" }
-     ]
-   } %}
-#}
 
 {% set brand_name = brand|default('DeeTickets') %}
 {% set brand_href = brand_url|default('/') %}
 
 <header class="header">
   <div class="container">
-    {# --- Mobile Drawer / Backdrop --- #}
     <aside class="sidebar-backdrop" id="hdr-backdrop" role="presentation" hidden>
       <nav class="sidebar" role="navigation" aria-label="Mobile menu" id="hdr-sidebar">
         <button class="close-btn" aria-label="Close menu" id="hdr-close-btn" type="button">×</button>
@@ -27,9 +15,7 @@
           <li>
             <button type="button" onclick="location.replace('/tickets')">Tickets</button>
           </li>
-
-          {# Show only when on /tickets* (JS can unhide this when path matches) #}
-          <li id="hdr-create-ticket-li" hidden>
+        <li id="hdr-create-ticket-li" hidden>
             <button type="button" onclick="location.replace('/tickets/new')" aria-label="Create Ticket">
               Create Ticket
             </button>
@@ -46,9 +32,7 @@
         </ul>
       </nav>
     </aside>
-
-    {# --- Top nav --- #}
-    <nav class="nav" aria-label="Main navigation">
+   <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="{{ brand_href }}" aria-label="{{ brand_name ~ ' Home' }}">
         {{ brand_name }}
       </a>
@@ -80,7 +64,6 @@
           {% endfor %}
         </div>
       {% else %}
-        {# Default actions (same as your React defaults) #}
         <div class="actions">
           <a class="btn btn-ghost" href="/auth/login" aria-label="Login">Login</a>
           <a class="btn btn-primary" href="/auth/signup" aria-label="Get started">Get started</a>

@@ -1,15 +1,9 @@
-{# templates/landing.twig #}
 {% extends "_layouts/base.twig" %}
 
 {% set signup_url = signup_url|default('/auth/signup') %}
 {% set login_url  = login_url|default('/auth/login') %}
 
-{% block styles %}
-  {# Option A: a single global stylesheet #}
-  <link rel="stylesheet" href="/assets/css/app.css">
-  {# Option B: split per-page (uncomment if you create landing.css) #}
-  {# <link rel="stylesheet" href="/assets/css/landing.css"> #}
-{% endblock %}
+
 
 {% block content %}
   <div class="lp-wrapper">
@@ -42,9 +36,7 @@
         <path d="M0,40 C240,140 480,0 720,40 C960,80 1200,20 1440,80 L1440 150 L0 150 Z" fill="#3a0ca314"></path>
       </svg>
     </section>
-
-    {# Optional partials — only if you create them #}
-    {% include "_partials/socialproof.twig" ignore missing %}
+ {% include "_partials/socialproof.twig" ignore missing %}
     {% include "_partials/keyfeatures.twig" ignore missing %}
 
     <section class="lp-stats" aria-label="Key performance stats">

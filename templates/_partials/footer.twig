@@ -1,20 +1,4 @@
-{# Usage (defaults provided):
-   {% include "_partials/footer.twig" with {
-      brand: "DeeTickets",
-      tagline: "Smart ticketing made simple. Track, assign, and resolve effortlessly.",
-      links: [
-        { label: "Features", href: "#features" },
-        { label: "How it Works", href: "#how" },
-        { label: "Login", href: "/auth/login" },
-        { label: "Get Started", href: "/auth/signup" },
-      ],
-      socials: [
-        { label: "Twitter", href: "https://twitter.com", icon: "twitter" },
-        { label: "GitHub", href: "https://github.com", icon: "github" },
-        { label: "LinkedIn", href: "https://linkedin.com", icon: "linkedin" },
-      ]
-   } %}
-#}
+
 
 {% set _brand   = brand   | default('DeeTickets') %}
 {% set _tagline = tagline | default('Smart ticketing made simple. Track, assign, and resolve effortlessly.') %}
@@ -32,13 +16,11 @@
 
 <footer class="lp-footer" aria-label="Site footer">
   <div class="container footer-inner">
-    {# Brand / tagline #}
     <div class="footer-brand">
       <h2 class="footer-logo">{{ _brand }}</h2>
       <p class="footer-tagline">{{ _tagline }}</p>
     </div>
 
-    {# Quick links #}
     <nav class="footer-links" aria-label="Footer navigation">
       <ul>
         {% for link in _links %}
@@ -46,9 +28,7 @@
         {% endfor %}
       </ul>
     </nav>
-
-    {# Social icons #}
-    <div class="footer-socials" aria-label="Social media">
+<div class="footer-socials" aria-label="Social media">
       {% for s in _socials %}
         <a href="{{ s.href }}" aria-label="{{ s.label }}">
           {% if s.icon == 'twitter' %}

@@ -32,7 +32,7 @@ switch ($path) {
     break;
 
   case '/auth/signup':
-    render($twig, 'authl/signup.twig', ['title' => 'Sign up']);
+    render($twig, 'auth/signup.twig', ['title' => 'Sign up']);
     break;
 
   case '/dashboard':

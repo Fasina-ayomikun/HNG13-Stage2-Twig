@@ -1,0 +1,104 @@
+{# templates/_partials/header.twig #}
+{# Usage:
+   {% include "_partials/header.twig" with {
+     brand: "DeeTickets",
+     brand_url: "/",
+     actions: [
+       { action_name: "Login", action_url: "/auth/login", color: "ghost" },
+       { action_name: "Get started", action_url: "/auth/signup", color: "primary" }
+     ]
+   } %}
+#}
+
+{% set brand_name = brand|default('DeeTickets') %}
+{% set brand_href = brand_url|default('/') %}
+
+<header class="header">
+  <div class="container">
+    {# --- Mobile Drawer / Backdrop --- #}
+    <aside class="sidebar-backdrop" id="hdr-backdrop" role="presentation" hidden>
+      <nav class="sidebar" role="navigation" aria-label="Mobile menu" id="hdr-sidebar">
+        <button class="close-btn" aria-label="Close menu" id="hdr-close-btn" type="button">×</button>
+
+        <ul>
+          <li>
+            <button type="button" onclick="location.replace('/dashboard')">Dashboard</button>
+          </li>
+          <li>
+            <button type="button" onclick="location.replace('/tickets')">Tickets</button>
+          </li>
+
+          {# Show only when on /tickets* (JS can unhide this when path matches) #}
+          <li id="hdr-create-ticket-li" hidden>
+            <button type="button" onclick="location.replace('/tickets/new')" aria-label="Create Ticket">
+              Create Ticket
+            </button>
+          </li>
+
+          <li>
+            <button
+              type="button"
+              onclick="try{ Auth?.logout?.(); location.replace('/auth/login'); }catch(e){ location.replace('/auth/login'); }"
+            >
+              Logout
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    {# --- Top nav --- #}
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="{{ brand_href }}" aria-label="{{ brand_name ~ ' Home' }}">
+        {{ brand_name }}
+      </a>
+
+      {% if actions is defined and actions is not empty %}
+        <div class="actions">
+          {% for a in actions %}
+            {% set klass = 'btn ' ~ (a.color is defined ? ('btn-' ~ a.color) : 'btn-ghost') %}
+
+            {% if a.action_url is defined and a.action_url %}
+              <a
+                class="{{ klass }}"
+                href="{{ a.action_url }}"
+                aria-label="{{ a.action_name }}"
+                {% if a.onClick is defined and a.onClick %}
+                  onclick={{ a.onClick|json_encode|raw }}
+                {% endif %}
+              >{{ a.action_name }}</a>
+            {% else %}
+              <button
+                type="button"
+                class="{{ klass }}"
+                aria-label="{{ a.action_name }}"
+                {% if a.onClick is defined and a.onClick %}
+                  onclick={{ a.onClick|json_encode|raw }}
+                {% endif %}
+              >{{ a.action_name }}</button>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        {# Default actions (same as your React defaults) #}
+        <div class="actions">
+          <a class="btn btn-ghost" href="/auth/login" aria-label="Login">Login</a>
+          <a class="btn btn-primary" href="/auth/signup" aria-label="Get started">Get started</a>
+        </div>
+      {% endif %}
+
+      {# Mobile Menu Button #}
+      <button
+        id="hdr-menu-toggle"
+        class="menu-toggle"
+        aria-label="Open menu"
+        aria-expanded="false"
+        type="button"
+      >
+        <span class="menu-bar"></span>
+        <span class="menu-bar"></span>
+        <span class="menu-bar"></span>
+      </button>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,324 @@
+{% extends "_layouts/base.twig" %}
+{% set protected = true %}
+
+{% set actions = [
+  { 'action_name': 'Dashboard', 'action_url': '/dashboard', 'color': 'ghost' },
+  { 'action_name': 'Create Ticket', 'onClick': 'window.TK.openCreate()', 'color': 'primary' }
+] %}
+
+{% block content %}
+<div class="tk-wrap">
+  <main class="tk-main">
+    <section class="container">
+      <section class="tk-controls" aria-label="Ticket filters">
+        <div class="control-row">
+          <div class="chip-group" role="tablist" aria-label="Filter by status">
+            {% include "_partials/filterchip.twig" with {
+              label: "All (" ~ (counts.total|default(0)) ~ ")",
+              active: true,
+              id: "count-total"
+            } %}
+            {% include "_partials/filterchip.twig" with {
+              label: "Open (" ~ (counts.open|default(0)) ~ ")",
+              id: "count-open"
+            } %}
+            {% include "_partials/filterchip.twig" with {
+              label: "In Progress (" ~ (counts.in_progress|default(0)) ~ ")",
+              id: "count-progress"
+            } %}
+            {% include "_partials/filterchip.twig" with {
+              label: "Closed (" ~ (counts.closed|default(0)) ~ ")",
+              id: "count-closed"
+            } %}
+          </div>
+
+          <div class="search-wrap">
+            <input id="tk-search" type="search" placeholder="Search by title…" aria-label="Search tickets by title">
+          </div>
+        </div>
+      </section>
+
+      <section class="tk-list" aria-labelledby="list-title">
+        <ul class="cards" id="tk-list" role="list"></ul>
+        <div class="empty" id="tk-empty" hidden>
+          <p>No tickets found.</p>
+          <button class="btn btn-primary" type="button" onclick="window.TK.openCreate()">Create your first ticket</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="modal-root"></div>
+  <div class="toast" id="tk-toast" role="status" aria-live="polite" hidden></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  if (!window.Tickets) return;
+
+  const { getTickets, setTickets, createTicket, updateTicket, deleteTicket, statusCounts } = window.Tickets;
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+  const listEl = qs('#tk-list');
+  const emptyEl = qs('#tk-empty');
+  const searchEl = qs('#tk-search');
+  const toastEl = qs('#tk-toast');
+  const countTotal = qs('#count-total');
+  const countOpen = qs('#count-open');
+  const countProg = qs('#count-progress');
+  const countClosed = qs('#count-closed');
+
+  let items = [];
+  let filter = 'all';
+  let query = '';
+
+  const url = new URL(window.location.href);
+  const pFilter = url.searchParams.get('filter');
+  const pQuery = url.searchParams.get('q') || url.searchParams.get('query');
+  if (pFilter) filter = pFilter;
+  if (pQuery) query = pQuery;
+
+  function load() {
+    try { items = getTickets(); } catch { items = []; }
+    initChips();
+    renderCounts();
+    renderList();
+    hydrateControls();
+  }
+
+  function hydrateControls() {
+    const activeChip = qsa('.chip-group .chip').find(b => b.dataset.filter === filter);
+    if (activeChip) {
+      qsa('.chip-group .chip').forEach(b => {
+        const isActive = b === activeChip;
+        b.classList.toggle('chip--active', isActive);
+        b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    }
+    if (searchEl && query) searchEl.value = query;
+  }
+
+  function initChips() {
+    if (countTotal) countTotal.dataset.filter = 'all';
+    if (countOpen) countOpen.dataset.filter = 'open';
+    if (countProg) countProg.dataset.filter = 'in_progress';
+    if (countClosed) countClosed.dataset.filter = 'closed';
+
+    qsa('.chip-group .chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        filter = btn.dataset.filter || 'all';
+        qsa('.chip-group .chip').forEach(b => {
+          const active = b === btn;
+          b.setAttribute('aria-pressed', active ? 'true' : 'false');
+          b.classList.toggle('chip--active', active);
+        });
+        renderList();
+        syncURL();
+      });
+    });
+  }
+
+  function renderCounts() {
+    const c = statusCounts ? statusCounts(items) : {
+      total: items.length,
+      open: items.filter(t => t.status === 'open').length,
+      in_progress: items.filter(t => t.status === 'in_progress').length,
+      closed: items.filter(t => t.status === 'closed').length
+    };
+    if (countTotal) countTotal.textContent = `All (${c.total ?? items.length})`;
+    if (countOpen) countOpen.textContent = `Open (${c.open ?? 0})`;
+    if (countProg) countProg.textContent = `In Progress (${c.in_progress ?? 0})`;
+    if (countClosed) countClosed.textContent = `Closed (${c.closed ?? 0})`;
+  }
+
+  function getFiltered() {
+    const q = (query || '').trim().toLowerCase();
+    return items.filter(t => {
+      const okStatus = (filter === 'all') ? true : t.status === filter;
+      const okQuery = !q ? true : (t.title || '').toLowerCase().includes(q);
+      return okStatus && okQuery;
+    });
+  }
+
+  function renderList() {
+    const rows = getFiltered();
+    listEl.innerHTML = '';
+    if (rows.length === 0) {
+      emptyEl.hidden = false;
+      return;
+    }
+    emptyEl.hidden = true;
+
+    const frag = document.createDocumentFragment();
+    rows.forEach(t => {
+      const li = document.createElement('li');
+      li.className = 'card tk-card';
+      li.setAttribute('role', 'listitem');
+      li.innerHTML = `
+        <div class="card-head">
+          <span class="badge ${badgeClass(t.status)}">${labelStatus(t.status)}</span>
+          <span class="meta">${fmtDate(t.updatedAt)}</span>
+        </div>
+        <h3 class="card-title">${(t.title ?? '').replace(/</g, '&lt;')}</h3>
+        ${t.description ? `<p class="card-desc">${(t.description).replace(/</g, '&lt;')}</p>` : ''}
+        <div class="card-actions">
+          <button class="btn btn-ghost" data-edit="${t.id}">Edit</button>
+          <button class="btn btn-danger" data-del="${t.id}">Delete</button>
+        </div>
+      `;
+      frag.appendChild(li);
+    });
+    listEl.appendChild(frag);
+  }
+
+  function labelStatus(s) {
+    if (s === 'in_progress') return 'In Progress';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function badgeClass(s) {
+    if (s === 'open') return 'badge--open';
+    if (s === 'in_progress') return 'badge--progress';
+    return 'badge--closed';
+  }
+
+  function fmtDate(ts) {
+    try { return new Date(ts).toLocaleString(); } catch { return ''; }
+  }
+
+  function ding(msg) {
+    toastEl.textContent = msg;
+    toastEl.hidden = false;
+    setTimeout(() => { toastEl.hidden = true; toastEl.textContent = ''; }, 2000);
+  }
+
+  function syncURL() {
+    const p = new URLSearchParams();
+    if (filter !== 'all') p.set('filter', filter);
+    if ((query || '').trim()) p.set('q', (query || '').trim());
+    const next = window.location.pathname + (p.toString() ? '?' + p.toString() : '');
+    window.history.replaceState(null, '', next);
+  }
+
+  searchEl.addEventListener('input', () => {
+    query = searchEl.value || '';
+    renderList();
+    syncURL();
+  });
+
+  listEl.addEventListener('click', (e) => {
+    const editBtn = e.target.closest('[data-edit]');
+    const delBtn = e.target.closest('[data-del]');
+    if (editBtn) {
+      openEdit(editBtn.getAttribute('data-edit'));
+      return;
+    }
+    if (delBtn) {
+      const id = delBtn.getAttribute('data-del');
+      const yes = window.confirm('Delete this ticket? This cannot be undone.');
+      if (!yes) return;
+      const ok = deleteTicket(id);
+      if (ok) {
+        items = getTickets();
+        renderCounts();
+        renderList();
+        ding('Ticket deleted.');
+      } else {
+        ding('Failed to delete ticket.');
+      }
+    }
+  });
+
+  function openCreate() {
+    openForm();
+  }
+
+  function openEdit(id) {
+    const ticket = items.find(t => t.id === id);
+    if (!ticket) return;
+    openForm(ticket);
+  }
+
+  function openForm(existing) {
+    const modalRoot = qs('#modal-root');
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop" role="presentation" data-modal-backdrop>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ticket-form-title" data-modal>
+          <header class="modal-head">
+            <h2 id="ticket-form-title">${existing ? 'Edit Ticket' : 'Create Ticket'}</h2>
+            <button class="modal-close" aria-label="Close" type="button" data-modal-close>×</button>
+          </header>
+          <form id="ticket-form" class="modal-body" method="post" novalidate data-ticket-form>
+            ${existing ? `<input type="hidden" name="id" value="${existing.id}">` : ''}
+            <input type="hidden" name="priority" value="${existing?.priority ?? 'normal'}">
+            <div class="field">
+              <label for="title">Title <span class="req">*</span></label>
+              <input id="title" name="title" required value="">
+            </div>
+            <div class="field">
+              <label for="status">Status <span class="req">*</span></label>
+              <select id="status" name="status" required>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" rows="4" placeholder="Optional details..."></textarea>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-ghost" data-modal-cancel>Cancel</button>
+              <button type="submit" class="btn btn-primary">${existing ? 'Save Changes' : 'Create Ticket'}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+
+    const form = qs('#ticket-form', modalRoot);
+    if (existing) {
+      form.querySelector('[name="title"]').value = existing.title || '';
+      form.querySelector('[name="description"]').value = existing.description || '';
+      form.querySelector('[name="status"]').value = existing.status || 'open';
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      if (existing) {
+        updateTicket(existing.id, data);
+        ding('Ticket updated.');
+      } else {
+        createTicket(data);
+        ding('Ticket created.');
+      }
+      items = getTickets();
+      renderCounts();
+      renderList();
+      closeForm();
+    });
+
+    modalRoot.querySelector('[data-modal-cancel]').addEventListener('click', closeForm);
+    modalRoot.querySelector('[data-modal-close]').addEventListener('click', closeForm);
+  }
+
+  function closeForm() {
+    const modalRoot = qs('#modal-root');
+    modalRoot.innerHTML = '';
+  }
+
+  window.TK = Object.assign(window.TK || {}, { openCreate });
+
+  if (window.location.pathname.endsWith('/new')) {
+    openCreate();
+    history.replaceState(null, '', '/tickets');
+  }
+
+  load();
+})();
+</script>
+{% endblock %}

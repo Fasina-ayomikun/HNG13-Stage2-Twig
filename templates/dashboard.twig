@@ -1,0 +1,47 @@
+{% extends "_layouts/base.twig" %}
+{% set protected = true %}
+{% set actions = [
+  { 'action_name': 'Go to Tickets', 'action_url': '/tickets', 'color': 'primary' },
+  {
+    'action_name': 'Logout',
+    'onClick': "try { Auth.logout(); location.replace('/auth/login'); } catch(e) { location.replace('/auth/login'); }",
+    'color': 'danger'
+  }
+] %}
+
+
+{% block content %}
+<section class="container db-main">
+  <h2 id="summary-title" class="heading">Ticket summary</h2>
+  <p class="desc">Overview of your ticket statuses at a glance.</p>
+
+  <section class="db-grid" aria-labelledby="summary-title">
+    <article class="card" role="region" aria-label="Total tickets"><p class="db-label">Total tickets</p><p class="db-value" id="count-total">0</p></article>
+    <article class="card db-card--open" role="region" aria-label="Open tickets"><p class="db-label">Open</p><p class="db-value" id="count-open">0</p></article>
+    <article class="card db-card--progress" role="region" aria-label="In progress tickets"><p class="db-label">In Progress</p><p class="db-value" id="count-progress">0</p></article>
+    <article class="card db-card--closed" role="region" aria-label="Closed tickets"><p class="db-label">Closed</p><p class="db-value" id="count-closed">0</p></article>
+  </section>
+
+  <section class="db-quick" aria-labelledby="quick-actions">
+    <h2 id="quick-actions" class="heading">Quick Actions</h2>
+    <div class="quick-grid">
+      <a class="quick-btn create-btn" href="/tickets/new">Create Ticket</a>
+      <a class="quick-btn view-all-btn" href="/tickets">View All Tickets</a>
+      <a class="quick-btn view-open-btn" href="/tickets?filter=open">View Open</a>
+      <a class="quick-btn view-closed-btn" href="/tickets?filter=closed">View Closed</a>
+    </div>
+  </section>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const c = Tickets.statusCounts(Tickets.getTickets());
+  document.getElementById('count-total').textContent=c.total;
+  document.getElementById('count-open').textContent=c.open;
+  document.getElementById('count-progress').textContent=c.in_progress;
+  document.getElementById('count-closed').textContent=c.closed;
+}());
+</script>
+{% endblock %}

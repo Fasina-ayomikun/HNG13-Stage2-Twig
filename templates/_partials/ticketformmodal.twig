@@ -1,0 +1,99 @@
+{# Props expected:
+   - initial: { id?, title?, status?, description?, priority? }
+   - is_edit: bool (optional; inferred from initial.id if not passed)
+   - errors: { title?, status?, description? } (optional)
+#}
+
+{% set initial   = initial|default({}) %}
+{% set is_edit   = is_edit is defined ? is_edit : (initial.id is defined and initial.id) %}
+{% set title_v   = initial.title|default('') %}
+{% set status_v  = initial.status|default('open') %}
+{% set desc_v    = initial.description|default('') %}
+{% set priority  = initial.priority|default('medium') %}
+{% set errors    = errors|default({}) %}
+
+<div class="modal-backdrop" role="presentation" data-modal-backdrop>
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="ticket-form-title"
+    data-modal
+  >
+    <header class="modal-head">
+      <h2 id="ticket-form-title">{{ is_edit ? 'Edit Ticket' : 'Create Ticket' }}</h2>
+      <button class="modal-close" aria-label="Close" type="button" data-modal-close>×</button>
+    </header>
+
+    <form
+      class="modal-body"
+      method="post"
+      novalidate
+      data-ticket-form
+      data-is-edit="{{ is_edit ? 'true' : 'false' }}"
+    >
+      {# Preserve id when editing #}
+      {% if initial.id is defined and initial.id is not empty %}
+        <input type="hidden" name="id" value="{{ initial.id }}">
+      {% endif %}
+      {# Priority exists in state but no visible control in React; keep parity #}
+      <input type="hidden" name="priority" value="{{ priority }}">
+
+      <div class="field">
+        <label for="title">
+          Title <span class="req">*</span>
+        </label>
+        <input
+          id="title"
+          name="title"
+          value="{{ title_v }}"
+          aria-describedby="{{ errors.title is defined ? 'err-title' : '' }}"
+          required
+        >
+        {% if errors.title is defined %}
+          <p id="err-title" class="error">{{ errors.title }}</p>
+        {% endif %}
+      </div>
+
+      <div class="field">
+        <label for="status">
+          Status <span class="req">*</span>
+        </label>
+        <select
+          id="status"
+          name="status"
+          aria-describedby="{{ errors.status is defined ? 'err-status' : '' }}"
+          required
+        >
+          <option value="open" {{ status_v == 'open' ? 'selected' : '' }}>Open</option>
+          <option value="in_progress" {{ status_v == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+          <option value="closed" {{ status_v == 'closed' ? 'selected' : '' }}>Closed</option>
+        </select>
+        {% if errors.status is defined %}
+          <p id="err-status" class="error">{{ errors.status }}</p>
+        {% endif %}
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="4"
+          aria-describedby="{{ errors.description is defined ? 'err-description' : '' }}"
+          placeholder="Optional details to help resolve the ticket…"
+        >{{ desc_v }}</textarea>
+        {% if errors.description is defined %}
+          <p id="err-description" class="error">{{ errors.description }}</p>
+        {% endif %}
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-modal-cancel>Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          {{ is_edit ? 'Save Changes' : 'Create Ticket' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

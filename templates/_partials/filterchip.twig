@@ -1,0 +1,21 @@
+{# templates/_partials/filterchip.twig #}
+{#
+  Props expected:
+  - label (string)
+  - active (bool)
+  - id (string, optional)
+  - href (optional) or click action (handled via JS)
+#}
+
+{% set is_active = active|default(false) %}
+{% set classes = 'chip' ~ (is_active ? ' chip--active' : '') %}
+
+<button
+  type="button"
+  {% if id is defined and id %}id="{{ id|e('html_attr') }}"{% endif %}
+  class="{{ classes }}"
+  aria-pressed="{{ is_active ? 'true' : 'false' }}"
+  data-chip="{{ label|e('html_attr') }}"
+>
+  {{ label }}
+</button>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{{ title|default('TicketFlow') }}</title>
+
+  <link rel="stylesheet" href="/assets/css/theme.css">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/landing.css">
+  <link rel="stylesheet" href="/assets/css/auth.css">
+  <link rel="stylesheet" href="/assets/css/tickets.css">
+  <link rel="stylesheet" href="/assets/css/dashboard.css">
+  {% block styles %}{% endblock %}
+</head>
+<body>
+
+  {% include "_partials/header.twig" with {
+  brand: brand|default('DeeTickets'),
+  brand_url: brand_url|default('/'),
+  actions: actions|default([])
+} %}
+
+
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+{% include "_partials/footer.twig" with {
+  brand: "DeeTickets",
+  tagline: "Smart ticketing made simple. Track, assign, and resolve effortlessly."
+} %}
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/tickets.js"></script>
+  <script src="/js/header.js"></script>
+
+  {# Client-side guard for protected pages per brief (localStorage) #}
+  {% if protected|default(false) %}
+    <script>
+      (function(){
+        try { if (!localStorage.getItem('ticketapp_session')) location.replace('/auth/login'); }
+        catch { location.replace('/auth/login'); }
+      }());
+    </script>
+  {% endif %}
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

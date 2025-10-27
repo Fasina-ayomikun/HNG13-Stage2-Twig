@@ -1,0 +1,64 @@
+{% extends "_layouts/base.twig" %}
+
+{% block content %}
+<section class="auth-wrap">
+  <form class="auth-card" id="loginForm" novalidate aria-labelledby="login-title">
+    <h1 id="login-title" class="auth-title">Login</h1>
+
+    <div class="auth-field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-err"/>
+      <p id="email-err" class="error" hidden></p>
+    </div>
+
+    <div class="auth-field">
+      <label for="password">Password</label>
+      <div class="password-wrap">
+        <input id="password" name="password" type="password" autocomplete="current-password" required aria-describedby="password-err"/>
+        <button type="button" class="toggle-pass" id="togglePass" aria-label="Show password" aria-pressed="false">Show</button>
+      </div>
+      <p id="password-err" class="error" hidden></p>
+    </div>
+
+    <div class="auth-actions">
+      <button class="btn btn-primary" type="submit" aria-label="Sign in">Sign In</button>
+      <a class="btn btn-ghost" href="/auth/signup" aria-label="Create a new account">Create account</a>
+    </div>
+  </form>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const form=document.getElementById('loginForm');
+  const email=form.email, password=form.password;
+  const eEmail=document.getElementById('email-err'), ePass=document.getElementById('password-err');
+  const toast=document.getElementById('toast');
+  const toggle=document.getElementById('togglePass');
+
+  if (window.Auth && Auth.isAuthed()) location.replace('/dashboard');
+
+  toggle.addEventListener('click',()=>{
+    const show=password.type==='password';
+    password.type=show?'text':'password';
+    toggle.setAttribute('aria-pressed',String(show));
+    toggle.textContent=show?'Hide':'Show';
+    toggle.setAttribute('aria-label',show?'Hide password':'Show password');
+  });
+
+  form.addEventListener('submit',ev=>{
+    ev.preventDefault();
+    eEmail.hidden=ePass.hidden=true; let ok=true;
+    if(!email.value.trim()){ eEmail.textContent='Email is required.'; eEmail.hidden=false; ok=false; }
+    else if(!emailRe.test(email.value)){ eEmail.textContent='Enter a valid email (name@example.com).'; eEmail.hidden=false; ok=false; }
+    if(!password.value.trim()){ ePass.textContent='Password is required.'; ePass.hidden=false; ok=false; }
+    if(!ok){ toast.textContent='Invalid credentials. Please check the errors.'; toast.hidden=false; setTimeout(()=>toast.hidden=true,2200); return; }
+    Auth.login(email.value); location.replace('/dashboard');
+  });
+}());
+</script>
+{% endblock %}

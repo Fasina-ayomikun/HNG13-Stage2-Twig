@@ -1,0 +1,206 @@
+{% extends "_layouts/base.twig" %}
+
+{# For auth pages you usually don't want the protected guard #}
+{% set protected = false %}
+
+
+{% block content %}
+<section>
+
+  <div class="auth-wrap">
+    <form
+    id="signupForm"
+      class="auth-card"
+      method="post"
+      novalidate
+      aria-labelledby="signup-title"
+      data-auth-form="signup"
+    >
+      <h1 id="signup-title" class="auth-title">Create your account</h1>
+
+      {# Pre-filled values & errors can be passed from server if you want SSR #}
+      {% set form = form|default({ email:'', password:'', confirm:'' }) %}
+      {% set errors = errors|default({}) %}
+      {% set toast = toast|default('') %}
+
+      <div class="auth-field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+          value="{{ form.email }}"
+          aria-describedby="{{ errors.email is defined ? 'email-err' : '' }}"
+        >
+        {% if errors.email is defined %}
+          <p id="email-err" class="error">{{ errors.email }}</p>
+        {% endif %}
+      </div>
+
+      <div class="auth-field">
+        <label for="password">Password</label>
+        <div class="password-wrap">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            required
+            value="{{ form.password }}"
+            aria-describedby="{{ errors.password is defined ? 'password-err' : '' }}"
+            data-pass="password"
+          >
+          <button
+            type="button"
+            class="toggle-pass"
+            aria-label="Show password"
+            aria-pressed="false"
+            data-toggle-pass="password"
+          >Show</button>
+        </div>
+        {% if errors.password is defined %}
+          <p id="password-err" class="error">{{ errors.password }}</p>
+        {% endif %}
+      </div>
+
+      <div class="auth-field">
+        <label for="confirm">Confirm Password</label>
+        <div class="password-wrap">
+          <input
+            id="confirm"
+            name="confirm"
+            type="password"
+            autocomplete="new-password"
+            required
+            value="{{ form.confirm }}"
+            aria-describedby="{{ errors.confirm is defined ? 'confirm-err' : '' }}"
+            data-pass="confirm"
+          >
+          <button
+            type="button"
+            class="toggle-pass"
+            aria-label="Show confirm password"
+            aria-pressed="false"
+            data-toggle-pass="confirm"
+          >Show</button>
+        </div>
+        {% if errors.confirm is defined %}
+          <p id="confirm-err" class="error">{{ errors.confirm }}</p>
+        {% endif %}
+      </div>
+
+      <div class="auth-actions">
+        <button class="btn btn-primary" type="submit" aria-label="Create account">Sign Up</button>
+        <a class="btn btn-ghost" href="/auth/login" aria-label="Back to login">Back to Login</a>
+      </div>
+    </form>
+
+    {% if toast %}
+      <div class="toast" role="status" aria-live="polite">{{ toast }}</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const form    = document.getElementById('signupForm');
+  console.log(form)
+  if (!form) return;
+
+  const email   = form.email;
+  const password= form.password;
+  const confirm = form.confirm;
+
+  const eEmail  = document.getElementById('email-err');
+  const ePass   = document.getElementById('password-err');
+  const eConf   = document.getElementById('confirm-err');
+  const toast   = document.getElementById('toast');
+
+  const toggleP = document.getElementById('togglePass');
+  const toggleC = document.getElementById('toggleConfirm');
+
+  // Already signed in? Bounce to dashboard.
+  if (window.Auth && Auth.isAuthed()) location.replace('/dashboard');
+
+  // Show/Hide password
+  if (toggleP && password) {
+    toggleP.addEventListener('click', () => {
+      const show = password.type === 'password';
+      password.type = show ? 'text' : 'password';
+      toggleP.setAttribute('aria-pressed', String(show));
+      toggleP.textContent = show ? 'Hide' : 'Show';
+      toggleP.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    });
+  }
+
+  // Show/Hide confirm password
+  if (toggleC && confirm) {
+    toggleC.addEventListener('click', () => {
+      const show = confirm.type === 'password';
+      confirm.type = show ? 'text' : 'password';
+      toggleC.setAttribute('aria-pressed', String(show));
+      toggleC.textContent = show ? 'Hide' : 'Show';
+      toggleC.setAttribute('aria-label', show ? 'Hide confirm password' : 'Show confirm password');
+    });
+  }
+
+  form.addEventListener('submit', ev => {
+    ev.preventDefault();
+
+    // reset errors
+    if (eEmail) eEmail.hidden = true;
+    if (ePass)  ePass.hidden  = true;
+    if (eConf)  eConf.hidden  = true;
+
+    let ok = true;
+
+    // email
+    if (!email.value.trim()) {
+      if (eEmail) { eEmail.textContent = 'Email is required.'; eEmail.hidden = false; }
+      ok = false;
+    } else if (!emailRe.test(email.value)) {
+      if (eEmail) { eEmail.textContent = 'Enter a valid email (name@example.com).'; eEmail.hidden = false; }
+      ok = false;
+    }
+
+    // password
+    if (!password.value.trim()) {
+      if (ePass) { ePass.textContent = 'Password is required.'; ePass.hidden = false; }
+      ok = false;
+    } else if (password.value.length < 6) {
+      if (ePass) { ePass.textContent = 'Use at least 6 characters.'; ePass.hidden = false; }
+      ok = false;
+    }
+
+    // confirm
+    if (!confirm.value.trim()) {
+      if (eConf) { eConf.textContent = 'Please confirm your password.'; eConf.hidden = false; }
+      ok = false;
+    } else if (confirm.value !== password.value) {
+      if (eConf) { eConf.textContent = 'Passwords do not match.'; eConf.hidden = false; }
+      ok = false;
+    }
+
+    if (!ok) {
+      if (toast) {
+        toast.textContent = 'Please fix the errors before continuing.';
+        toast.hidden = false;
+        setTimeout(() => (toast.hidden = true), 2200);
+      }
+      return;
+    }
+
+    // "Create account" — for this local app we just log in with email
+    if (window.Auth && typeof Auth.login === 'function') {
+      Auth.login(email.value);
+    }
+    location.replace('/dashboard');
+  });
+}());
+</script>
+{% endblock %}

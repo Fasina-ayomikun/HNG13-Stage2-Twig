@@ -1,0 +1,19 @@
+:root {
+    --color-1: #031d44;
+    --color-2: #04395e;
+    --color-3: #d5896f;
+
+    --bg: #ffffff;
+    --text: #04395e;
+    --muted: #6b7280;
+
+    --primary: var(--color-2);
+    /* general accent */
+    --cta: var(--color-3);
+    /* call to action */
+    --accent: #04395e14;
+    --card-bg: #ffffff;
+    --shadow: 0 4px 15px rgba(16, 24, 40, 0.103);
+    --focus: 0 0 0 3px #04395e47;
+    --max-width: 1440px;
+}

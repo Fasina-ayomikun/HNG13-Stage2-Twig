@@ -1,9 +1,5 @@
 RewriteEngine On
-
-# Serve real files/folders directly
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
-
-# Otherwise hand off to index.php
 RewriteRule ^ index.php [QSA,L]

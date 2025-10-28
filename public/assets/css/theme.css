@@ -8,9 +8,7 @@
     --muted: #6b7280;
 
     --primary: var(--color-2);
-    /* general accent */
     --cta: var(--color-3);
-    /* call to action */
     --accent: #04395e14;
     --card-bg: #ffffff;
     --shadow: 0 4px 15px rgba(16, 24, 40, 0.103);

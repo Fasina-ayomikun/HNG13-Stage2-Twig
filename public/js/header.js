@@ -16,23 +16,18 @@
   } catch {}
 
   function openMenu() {
-    console.log("open");
     backdrop.classList.add("is-open");
 
     toggle.setAttribute("aria-expanded", "true");
   }
 
   function closeMenu() {
-    console.log("close", backdrop);
     backdrop.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
   }
 
   toggle.addEventListener("click", () => {
-    console.log("toggle cliecked");
-
     const isOpen = toggle.getAttribute("aria-expanded") === "true";
-    console.log(isOpen, "w1");
 
     if (isOpen) closeMenu();
     else openMenu();

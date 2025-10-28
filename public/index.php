@@ -5,9 +5,13 @@ require __DIR__ . '/../vendor/autoload.php';
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
+// 👇 Enable temporarily to see exact errors while testing
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
 $loader = new FilesystemLoader(__DIR__ . '/../templates');
 $twig   = new Environment($loader, [
-  'cache' => false,                 // set to a writable dir in prod
+  'cache' => false,
   'autoescape' => 'html',
 ]);
 
@@ -21,17 +25,27 @@ function render(Environment $twig, string $tpl, array $data = []): void {
 switch ($path) {
   case '/':
     render($twig, 'landing.twig', ['title' => 'TicketFlow — Home']);
+    break;
+
   case '/auth/login':
     render($twig, 'auth/login.twig', ['title' => 'Login']);
+    break;
+
   case '/auth/signup':
     render($twig, 'auth/signup.twig', ['title' => 'Sign up']);
+    break;
+
   case '/dashboard':
     render($twig, 'dashboard.twig', ['title' => 'Dashboard', 'protected' => true]);
+    break;
+
   case '/tickets':
   case '/tickets/new':
     render($twig, 'tickets.twig', ['title' => 'Tickets', 'protected' => true]);
+    break;
+
   default:
-    http_response_code(302);
-    header('Location: /');
-    exit;
+    http_response_code(404);
+    render($twig, '404.twig', ['title' => 'Page Not Found']);
+    break;
 }
